@@ -26,7 +26,8 @@ jobs:
             pkg-config \
             python3-dev \
             libcairo2-dev \
-            ffmpeg
+            ffmpeg \
+            graphviz
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -55,6 +56,7 @@ jobs:
           cd .manim-docs
           pip install -r docs/requirements.txt
           pip install -r docs/rtd-requirements.txt
+          pip install sphinx-markdown-builder
           pip install -e .
 
       - name: Run update_manim_docs.py
