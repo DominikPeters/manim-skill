@@ -54,6 +54,7 @@ jobs:
           pip install --upgrade pip
           cd .manim-docs
           pip install -r docs/requirements.txt
+          pip install -r docs/rtd-requirements.txt
           pip install -e .
 
       - name: Run update_manim_docs.py
