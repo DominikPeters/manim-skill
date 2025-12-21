@@ -53,7 +53,8 @@ jobs:
           source .manim-docs/.venv-docs/bin/activate
           pip install --upgrade pip
           cd .manim-docs
-          pip install -e .[doc]
+          pip install -r docs/requirements.txt
+          pip install -e .
 
       - name: Run update_manim_docs.py
         run: python3 tools/update_manim_docs.py
