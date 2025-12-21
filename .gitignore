@@ -41,3 +41,4 @@ Thumbs.db
 media/
 *.zip
 *.skill
+.manim-docs/
