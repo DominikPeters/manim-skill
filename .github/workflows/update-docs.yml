@@ -23,6 +23,28 @@ jobs:
         with:
           python-version: '3.11'
 
+      - name: Cache Manim docs venv
+        uses: actions/cache@v3
+        with:
+          path: .manim-docs/.venv-docs
+          key: ${{ runner.os }}-manim-docs-venv-${{ hashFiles('.manim-docs/pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-manim-docs-venv-
+
+      - name: Set up Manim docs environment
+        run: |
+          # Clone manim repo if not exists (script will do this too, but we need it for pip install)
+          if [ ! -d ".manim-docs/.git" ]; then
+            git clone https://github.com/ManimCommunity/manim.git .manim-docs
+          fi
+
+          # Create venv and install dependencies
+          python3 -m venv .manim-docs/.venv-docs
+          source .manim-docs/.venv-docs/bin/activate
+          pip install --upgrade pip
+          cd .manim-docs
+          pip install -e .[doc]
+
       - name: Run update_manim_docs.py
         run: python3 tools/update_manim_docs.py
 
