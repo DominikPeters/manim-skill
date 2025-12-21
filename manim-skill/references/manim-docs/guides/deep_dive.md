@@ -212,7 +212,7 @@ is located [here](https://github.com/ManimCommunity/manim/blob/ac1ee9a683ce8b922
 **Jupyter notebooks.** In Jupyter notebooks, the communication with the library
 is handled by the `%%manim` magic command, which is implemented in the
 `manim.utils.ipython_magic` module. There is
-`some documentation` available for the magic command,
+[`some documentation`](../reference/manim.utils.ipython_magic.ManimMagic.md#manim.utils.ipython_magic.ManimMagic.manim) available for the magic command,
 and the code creating the scene class and calling its render method is located
 [here](https://github.com/ManimCommunity/manim/blob/ac1ee9a683ce8b92233407351c681f7d71a4f2db/manim/utils/ipython_magic.py#L137-L138).
 

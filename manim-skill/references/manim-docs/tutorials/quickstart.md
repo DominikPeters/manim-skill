@@ -5,7 +5,7 @@ Before proceeding, install Manim and make sure it is running properly by
 following the steps in [Installation](../installation.md). For
 information on using Manim with Jupyterlab or Jupyter notebook, go to the
 documentation for the
-`IPython magic command`,
+[`IPython magic command`](../reference/manim.utils.ipython_magic.ManimMagic.md#manim.utils.ipython_magic.ManimMagic.manim),
 `%%manim`.
 
 #### IMPORTANT
