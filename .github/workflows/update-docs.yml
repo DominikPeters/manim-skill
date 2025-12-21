@@ -47,20 +47,33 @@ jobs:
 
       - name: Set up Manim docs environment
         run: |
-          # Clone manim repo if not exists (script will do this too, but we need it for pip install)
+          # Clone manim repo if not exists
           if [ ! -d ".manim-docs/.git" ]; then
-            git clone https://github.com/ManimCommunity/manim.git .manim-docs
+            # If .manim-docs exists but is not a git repo (e.g., just venv from cache)
+            if [ -d ".manim-docs" ]; then
+              # Clone to temp location then move
+              git clone https://github.com/ManimCommunity/manim.git .manim-docs-temp
+              mv .manim-docs-temp/* .manim-docs-temp/.git .manim-docs/
+              rmdir .manim-docs-temp
+            else
+              git clone https://github.com/ManimCommunity/manim.git .manim-docs
+            fi
           fi
 
-          # Create venv and install dependencies
-          python3 -m venv .manim-docs/.venv-docs
-          source .manim-docs/.venv-docs/bin/activate
-          pip install --upgrade pip
-          cd .manim-docs
-          pip install -r docs/requirements.txt
-          pip install -r docs/rtd-requirements.txt
-          pip install sphinx-markdown-builder
-          pip install -e .
+          # Create venv and install dependencies (only if sphinx-build is missing)
+          if [ ! -f ".manim-docs/.venv-docs/bin/sphinx-build" ]; then
+            echo "Setting up fresh venv with Sphinx..."
+            python3 -m venv .manim-docs/.venv-docs
+            source .manim-docs/.venv-docs/bin/activate
+            pip install --upgrade pip
+            cd .manim-docs
+            pip install -r docs/requirements.txt
+            pip install -r docs/rtd-requirements.txt
+            pip install sphinx-markdown-builder
+            pip install -e .
+          else
+            echo "Venv already exists with sphinx-build, skipping installation"
+          fi
 
       - name: Run update_manim_docs.py
         run: python3 tools/update_manim_docs.py
