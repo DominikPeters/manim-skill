@@ -51,10 +51,13 @@ jobs:
           if [ ! -d ".manim-docs/.git" ]; then
             # If .manim-docs exists but is not a git repo (e.g., just venv from cache)
             if [ -d ".manim-docs" ]; then
-              # Clone to temp location then move
+              # Clone to temp, move cached venv there, then swap
               git clone https://github.com/ManimCommunity/manim.git .manim-docs-temp
-              mv .manim-docs-temp/* .manim-docs-temp/.git .manim-docs/
-              rmdir .manim-docs-temp
+              if [ -d ".manim-docs/.venv-docs" ]; then
+                mv .manim-docs/.venv-docs .manim-docs-temp/
+              fi
+              rm -rf .manim-docs
+              mv .manim-docs-temp .manim-docs
             else
               git clone https://github.com/ManimCommunity/manim.git .manim-docs
             fi
