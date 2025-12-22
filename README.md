@@ -2,6 +2,10 @@
 
 An Agent Skill for rendering Manim scenes to PNG frames and reviewing them quickly to diagnose animation and layout issues, based on the open format from https://agentskills.io/.
 
+📦 **Download latest release:**
+- [manim-skill.zip](https://github.com/DominikPeters/manim-skill/releases/latest/download/manim-skill.zip)
+- [manim-skill.skill](https://github.com/DominikPeters/manim-skill/releases/latest/download/manim-skill.skill)
+
 ## Overview
 
 This skill streamlines the Manim development workflow by providing scripts to:
