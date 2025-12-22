@@ -18,9 +18,14 @@ def parse_args() -> argparse.Namespace:
         help="Directory containing PNG frames (e.g., media/images/foo).",
     )
     parser.add_argument(
+        "--scene-name",
+        default=None,
+        help="Scene name (used for output filename if --output not specified).",
+    )
+    parser.add_argument(
         "--output",
-        default="contact_sheet.png",
-        help="Output PNG filename (default: contact_sheet.png).",
+        default=None,
+        help="Output PNG filename (default: <scene_name>_sheet.png or contact_sheet.png).",
     )
     parser.add_argument(
         "--grid",
@@ -98,7 +103,16 @@ def main() -> int:
 
     selected = [frames[i] for i in indices]
     selected_indices = indices
-    output_path = image_dir / args.output
+
+    # Determine output filename
+    if args.output:
+        output_filename = args.output
+    elif args.scene_name:
+        output_filename = f"{args.scene_name}_sheet.png"
+    else:
+        output_filename = "contact_sheet.png"
+
+    output_path = image_dir / output_filename
 
     if Image is None:
         magick = shutil.which("magick")
@@ -116,7 +130,7 @@ def main() -> int:
         cmd.extend(str(path) for path in selected)
         cmd.extend(["-tile", f"{cols}x{rows}", "-geometry", geometry, str(output_path)])
         subprocess.run(cmd, check=True)
-        print(f"Wrote contact sheet: {output_path}")
+        print(f"Wrote contact sheet: {output_path.resolve()}")
         return 0
 
     images = [Image.open(path).convert("RGB") for path in selected]
@@ -188,7 +202,7 @@ def main() -> int:
         draw.rectangle([(0, y), (sheet_w, y + grid_line_width - 1)], fill=grid_color)
 
     sheet.save(output_path)
-    print(f"Wrote contact sheet: {output_path}")
+    print(f"Wrote contact sheet: {output_path.resolve()}")
     return 0
 
 

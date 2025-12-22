@@ -81,10 +81,16 @@ def main() -> int:
 
     # Count frames
     frame_count = 0
+    frame_files = []
     if image_dir.exists():
-        frame_count = len(list(image_dir.glob("*.png")))
+        frame_files = sorted(image_dir.glob("*.png"))
+        frame_count = len(frame_files)
 
     print(f"Rendered {frame_count} frames in {elapsed:.1f}s at {fps} FPS")
+    if frame_files:
+        first_frame = frame_files[0].name
+        last_frame = frame_files[-1].name
+        print(f"Frame images: {image_dir.resolve()}/{first_frame} to {last_frame}")
 
     # Generate contact sheet if requested
     if make_contact_sheet:
@@ -92,7 +98,15 @@ def main() -> int:
         contact_script = script_dir / "make_contact_sheet.py"
         try:
             subprocess.run(
-                ["python3", str(contact_script), str(image_dir), "--fps", str(fps)],
+                [
+                    "python3",
+                    str(contact_script),
+                    str(image_dir),
+                    "--scene-name",
+                    scene_name,
+                    "--fps",
+                    str(fps),
+                ],
                 check=True,
             )
         except subprocess.CalledProcessError as e:

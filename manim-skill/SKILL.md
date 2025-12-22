@@ -30,10 +30,10 @@ Frames are written to `media/images/<file>/`.
 
 ### 2. Inspect frames
 
-For a quick overview, use `--contact-sheet` when rendering, producing `/media/images/<file>/contact_sheet.png`. Read this file to inspect frames at a glance. To regenerate a contact sheet without re-rendering:
+For a quick overview, use `--contact-sheet` when rendering, producing `/media/images/<file>/<SceneName>_sheet.png`. **Always read the contact sheet first** to get an overview of the animation progression. Then **read at least one full-size frame** (e.g., the first, middle, or a frame showing a key transition) to verify details at full resolution. To regenerate a contact sheet without re-rendering:
 
 ```bash
-python3 scripts/make_contact_sheet.py <frames_directory>
+python3 scripts/make_contact_sheet.py <frames_directory> --scene-name <SceneName>
 ```
 
 Alternatively, read frame images directly for visual inspection. Check early, middle, and late frames plus key transitions to catch overlaps, cropping, or timing issues.
