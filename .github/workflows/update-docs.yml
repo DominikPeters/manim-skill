@@ -84,10 +84,33 @@ jobs:
       - name: Check for changes
         id: check-changes
         run: |
-          if git diff --quiet; then
-            echo "has_changes=false" >> $GITHUB_OUTPUT
+          # Check if update_manim_docs.py produced any changes
+          DOCS_CHANGED=false
+          if ! git diff --quiet; then
+            DOCS_CHANGED=true
+          fi
+
+          # Check if skill files changed since last release
+          SKILL_FILES_CHANGED=false
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          if [ -n "$LAST_TAG" ]; then
+            echo "Comparing against last release: $LAST_TAG"
+            if git diff --name-only "$LAST_TAG" HEAD | grep -E '^manim-skill/(SKILL\.md|scripts/)' > /dev/null; then
+              SKILL_FILES_CHANGED=true
+              echo "Skill files changed since $LAST_TAG"
+            fi
           else
+            echo "No previous release tag found, treating as first release"
+            SKILL_FILES_CHANGED=true
+          fi
+
+          # Release if either docs were updated or skill files were changed
+          if [ "$DOCS_CHANGED" = true ] || [ "$SKILL_FILES_CHANGED" = true ]; then
             echo "has_changes=true" >> $GITHUB_OUTPUT
+            echo "docs_changed=$DOCS_CHANGED" >> $GITHUB_OUTPUT
+          else
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+            echo "docs_changed=false" >> $GITHUB_OUTPUT
           fi
 
       - name: Commit changes
