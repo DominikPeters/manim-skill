@@ -188,7 +188,7 @@ counterclockwise.
 ### Examples
 
 ```pycon
->>> from manim import Square, get_winding_number
+>>> from manim import Square, UP, get_winding_number
 >>> polygon = Square()
 >>> get_winding_number(polygon.get_vertices())
 np.float64(1.0)
