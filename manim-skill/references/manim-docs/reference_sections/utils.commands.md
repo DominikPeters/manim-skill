@@ -11,7 +11,7 @@
 ### capture(command, cwd=None, command_input=None)
 
 * **Parameters:**
-  * **command** (*str*)
+  * **command** (*str* *|* *list* *[**str* *]*)
   * **cwd** ([*StrOrBytesPath*](manim.typing.md#manim.typing.StrOrBytesPath) *|* *None*)
   * **command_input** (*str* *|* *None*)
 * **Return type:**
