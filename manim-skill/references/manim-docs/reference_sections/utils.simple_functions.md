@@ -68,7 +68,7 @@ $k$ elements from a set of $n$ elements.
 ### References
 
 - [https://en.wikipedia.org/wiki/Combination](https://en.wikipedia.org/wiki/Combination)
-- [https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.comb.html](https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.comb.html)
+- [https://docs.python.org/3/library/math.html#math.comb](https://docs.python.org/3/library/math.html#math.comb)
 
 * **Parameters:**
   * **n** (*int*)
