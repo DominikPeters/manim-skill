@@ -171,29 +171,35 @@ we have to add it manually.
 
 The TeX mobject can accept multiple strings as arguments. Afterwards you can
 refer to the individual parts either by their index (like `tex[1]`), or by
-selecting parts of the tex code. In this example, we set the color
-of the `\bigstar` using `set_color_by_tex()`:
+using `set_color_by_tex()`, which matches the argument exactly against
+the strings passed to the constructor. In this example, we color the
+`\bigstar` part:
 
-Note that `set_color_by_tex()` colors the entire substring containing
-the Tex, not just the specific symbol or Tex expression. Consider the following example:
+Because `set_color_by_tex()` requires an exact match, it cannot directly
+target a token inside a string that was passed as a single argument. To color
+every `x` in a formula, use `substrings_to_isolate` to split the string at
+each occurrence first:
 
-As you can see, this colors the entire equation yellow, contrary to what
-may be expected. To color only `x` yellow, we have to do the following:
-
-By setting `substrings_to_isolate` to `x`, we split up the
-[`MathTex`](../reference/manim.mobject.text.tex_mobject.MathTex.md#manim.mobject.text.tex_mobject.MathTex) into substrings automatically and isolate the `x` components
-into individual substrings. Only then can `set_color_by_tex()` be used
-to achieve the desired result.
+Each isolated occurrence of `x` becomes its own sub-mobject that
+`set_color_by_tex()` can match exactly.
 If one of the `substrings_to_isolate` is in a sub or superscript, it needs
 to be enclosed by curly brackets.
 
 Note that Manim also supports a custom syntax that allows splitting
 a TeX string into substrings easily: simply enclose parts of your formula
 that you want to isolate with double braces. In the string
-`MathTex(r"{{ a^2 }} + {{ b^2 }} = {{ c^2 }}")`, the rendered mobject
+`MathTex(r"{{ a^2 }} + {{ b^2 }} = {{ c^2 }}")`, the rendered mobject
 will consist of the substrings `a^2`, `+`, `b^2`, `=`, and `c^2`.
 This makes transformations between similar text fragments easy
 to write using [`TransformMatchingTex`](../reference/manim.animation.transform_matching_parts.TransformMatchingTex.md#manim.animation.transform_matching_parts.TransformMatchingTex).
+
+For Manim to recognise a `{{` as a group opener, it must appear either
+at the very start of the string or be immediately preceded by a whitespace
+character.  This means that `{{` embedded directly after non-whitespace
+LaTeX — such as `\frac{{{n}}}{k}` or `a^{{2}}` — is left untouched,
+which prevents accidental splitting of ordinary nested-brace expressions.
+To stop a leading `{{` from being treated as a group opener, insert a
+space between the two braces: `{{ ... }}` → `{ { ... } }`.
 
 ### Using `index_labels` to work with complicated strings
 
