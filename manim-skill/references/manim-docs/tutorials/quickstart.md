@@ -148,7 +148,7 @@ interpolating between two geometric shapes) with just a few lines of code.
 
 Next, let’s go over some basic techniques for positioning `Mobject`s.
 
-1. Open `scene.py`, and add the following code snippet below the `SquareToCircle` method:
+1. Open `scene.py`, and add the following code snippet below the `SquareToCircle` class:
 
 ```python
 class SquareAndCircle(Scene):

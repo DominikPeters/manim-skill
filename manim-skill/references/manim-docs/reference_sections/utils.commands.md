@@ -12,7 +12,7 @@
 
 * **Parameters:**
   * **command** (*str* *|* *list* *[**str* *]*)
-  * **cwd** ([*StrOrBytesPath*](manim.typing.md#manim.typing.StrOrBytesPath) *|* *None*)
+  * **cwd** (*TypeAliasForwardRef* *(* *'~manim.typing.StrOrBytesPath'* *)*  *|* *None*)
   * **command_input** (*str* *|* *None*)
 * **Return type:**
   tuple[str, str, int]

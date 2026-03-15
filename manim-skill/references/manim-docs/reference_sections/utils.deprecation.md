@@ -23,11 +23,11 @@ The decorated callable will cause a warning when used. The docstring of the
 deprecated callable is adjusted to indicate that this callable is deprecated.
 
 * **Parameters:**
-  * **func** – The function to be decorated. Should not be set by the user.
-  * **since** – The version or date since deprecation.
-  * **until** – The version or date until removal of the deprecated callable.
-  * **replacement** – The identifier of the callable replacing the deprecated one.
-  * **message** – The reason for why the callable has been deprecated.
+  * **func** (*Callable* *[* *[* *...* *]* *,* [*T*](#manim.utils.deprecation.T) *]*  *|* *None*) – The function to be decorated. Should not be set by the user.
+  * **since** (*str* *|* *None*) – The version or date since deprecation.
+  * **until** (*str* *|* *None*) – The version or date until removal of the deprecated callable.
+  * **replacement** (*str* *|* *None*) – The identifier of the callable replacing the deprecated one.
+  * **message** (*str* *|* *None*) – The reason for why the callable has been deprecated.
 * **Returns:**
   The decorated callable.
 * **Return type:**

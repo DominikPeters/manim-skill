@@ -62,7 +62,7 @@ The folder-wide file can be ignored by passing `custom_file`.  However,
 the user-wide and library-wide config files cannot be ignored.
 
 * **Parameters:**
-  **custom_file** ([*StrPath*](manim.typing.md#manim.typing.StrPath) *|* *None*) – Path to a custom config file.  If used, the folder-wide file in the
+  **custom_file** (*TypeAliasForwardRef* *(* *'~manim.typing.StrPath'* *)*  *|* *None*) – Path to a custom config file.  If used, the folder-wide file in the
   relevant directory will be ignored, if it exists.  If None, the
   folder-wide file will be used, if it exists.
 * **Returns:**

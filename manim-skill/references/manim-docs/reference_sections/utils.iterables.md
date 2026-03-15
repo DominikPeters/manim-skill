@@ -185,6 +185,11 @@ Converts obj to a list intelligently.
 [<built-in function len>]
 ```
 
+* **Parameters:**
+  **obj** (*str* *|* *Iterable* *[*[*T*](#manim.utils.iterables.T) *]*  *|* [*T*](#manim.utils.iterables.T))
+* **Return type:**
+  list[str] | list[[*T*](#manim.utils.iterables.T)]
+
 ### make_even(iterable_1, iterable_2)
 
 Extends the shorter of the two iterables with duplicate values until its
@@ -404,6 +409,11 @@ Converts obj to a tuple intelligently.
 >>> tuplify(len)
 (<built-in function len>,)
 ```
+
+* **Parameters:**
+  **obj** (*str* *|* *Iterable* *[*[*T*](#manim.utils.iterables.T) *]*  *|* [*T*](#manim.utils.iterables.T))
+* **Return type:**
+  tuple[str] | tuple[[*T*](#manim.utils.iterables.T)]
 
 ### uniq_chain(\*args)
 

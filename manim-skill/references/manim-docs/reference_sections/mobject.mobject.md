@@ -5,22 +5,22 @@ Base classes for objects that can be displayed.
 
 ### Type Aliases
 
-### *class* TimeBasedUpdater
+### *class* \_TimeBasedUpdater
 
 ```default
 Callable[['Mobject', float], object]
 ```
 
-### *class* NonTimeBasedUpdater
+### *class* \_NonTimeBasedUpdater
 
 ```default
 Callable[['Mobject'], object]
 ```
 
-### *class* Updater
+### *class* \_Updater
 
 ```default
-[`NonTimeBasedUpdater`](#manim.mobject.mobject.NonTimeBasedUpdater) | [`TimeBasedUpdater`](#manim.mobject.mobject.TimeBasedUpdater)
+`_NonTimeBasedUpdater`` | `_TimeBasedUpdater``
 ```
 
 ### Classes
@@ -48,6 +48,8 @@ methods using method chaining with the `.animate` syntax.
 
 ### Examples
 
+* **Parameters:**
+  **method** (*MethodType*)
 * **Return type:**
-  *LambdaType*
+  *Callable*[[*MethodType*], *MethodType*]
 

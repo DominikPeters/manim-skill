@@ -12,7 +12,7 @@ Utility functions related to Bézier curves.
 Classic implementation of a Bézier curve.
 
 * **Parameters:**
-  **points** – $(d+1, 3)$-shaped array of $d+1$ control points defining a single Bézier
+  **points** (*TypeAliasForwardRef* *(* *'~manim.typing.Point3D_Array'* *)*  *|* *Sequence* *[**TypeAliasForwardRef* *(* *'~manim.typing.Point3D_Array'* *)* *]*) – $(d+1, 3)$-shaped array of $d+1$ control points defining a single Bézier
   curve of degree $d$. Alternatively, for vectorization purposes, `points` can
   also be a $(d+1, M, 3)$-shaped sequence of $d+1$ arrays of $M$
   control points each, which define M Bézier curves instead.
@@ -157,13 +157,13 @@ This is sufficient to find proper control points for the quadratic
 Bézier curves.
 
 * **Parameters:**
-  * **a0** – The start anchor of a single cubic Bézier curve, or an array of
+  * **a0** (*TypeAliasForwardRef* *(* *'~manim.typing.Point3D'* *)*  *|* *TypeAliasForwardRef* *(* *'~manim.typing.Point3D_Array'* *)*) – The start anchor of a single cubic Bézier curve, or an array of
     $N$ start anchors for $N$ curves.
-  * **h0** – The first handle of a single cubic Bézier curve, or an array of
+  * **h0** (*TypeAliasForwardRef* *(* *'~manim.typing.Point3D'* *)*  *|* *TypeAliasForwardRef* *(* *'~manim.typing.Point3D_Array'* *)*) – The first handle of a single cubic Bézier curve, or an array of
     $N$ first handles for $N$ curves.
-  * **h1** – The second handle of a single cubic Bézier curve, or an array of
+  * **h1** (*TypeAliasForwardRef* *(* *'~manim.typing.Point3D'* *)*  *|* *TypeAliasForwardRef* *(* *'~manim.typing.Point3D_Array'* *)*) – The second handle of a single cubic Bézier curve, or an array of
     $N$ second handles for $N$ curves.
-  * **a1** – The end anchor of a single cubic Bézier curve, or an array of
+  * **a1** (*TypeAliasForwardRef* *(* *'~manim.typing.Point3D'* *)*  *|* *TypeAliasForwardRef* *(* *'~manim.typing.Point3D_Array'* *)*) – The end anchor of a single cubic Bézier curve, or an array of
     $N$ end anchors for $N$ curves.
 * **Returns:**
   An array containing either 6 points for 2 quadratic Bézier curves
@@ -585,9 +585,9 @@ True
 Linearly interpolates between two values `start` and `end`.
 
 * **Parameters:**
-  * **start** – The start of the range.
-  * **end** – The end of the range.
-  * **alpha** – A float between 0 and 1, or an $(n, 1)$ column vector containing
+  * **start** (*float* *|* *TypeAliasForwardRef* *(* *'~manim.typing.Point3D'* *)*) – The start of the range.
+  * **end** (*float* *|* *TypeAliasForwardRef* *(* *'~manim.typing.Point3D'* *)*) – The end of the range.
+  * **alpha** (*float* *|* *TypeAliasForwardRef* *(* *'~manim.typing.ColVector'* *)*) – A float between 0 and 1, or an $(n, 1)$ column vector containing
     $n$ floats between 0 and 1 to interpolate in a vectorized fashion.
 * **Returns:**
   The result of the linear interpolation.
@@ -611,13 +611,15 @@ values that would produce the specified `value`
 given the `start` and `end` values or points.
 
 * **Parameters:**
-  * **start** – The start value or point of the interpolation.
-  * **end** – The end value or point of the interpolation.
-  * **value** – The value or point for which the alpha value
+  * **start** (*float* *|* *TypeAliasForwardRef* *(* *'~manim.typing.Point3D'* *)*) – The start value or point of the interpolation.
+  * **end** (*float* *|* *TypeAliasForwardRef* *(* *'~manim.typing.Point3D'* *)*) – The end value or point of the interpolation.
+  * **value** (*float* *|* *TypeAliasForwardRef* *(* *'~manim.typing.Point3D'* *)*) – The value or point for which the alpha value
     should be determined.
 * **Returns:**
   * *The alpha values producing the given input*
   * when interpolating between `start` and `end`.
+* **Return type:**
+  float | TypeAliasForwardRef(‘~manim.typing.Point3D’)
 
 ### Example
 
@@ -698,11 +700,11 @@ False
 Interpolate a value from an old range to a new range.
 
 * **Parameters:**
-  * **new_start** – The start of the new range.
-  * **new_end** – The end of the new range.
-  * **old_start** – The start of the old range.
-  * **old_end** – The end of the old range.
-  * **old_value** – The value within the old range whose corresponding
+  * **new_start** (*float*) – The start of the new range.
+  * **new_end** (*float*) – The end of the new range.
+  * **old_start** (*float*) – The start of the old range.
+  * **old_end** (*float*) – The end of the old range.
+  * **old_value** (*float* *|* *TypeAliasForwardRef* *(* *'~manim.typing.Point3D'* *)*) – The value within the old range whose corresponding
     value in the new range (with the same alpha value)
     is desired.
 * **Return type:**
@@ -723,8 +725,8 @@ np.float64(50.0)
 Returns the midpoint between two values.
 
 * **Parameters:**
-  * **start** – The first value
-  * **end** – The second value
+  * **start** (*float* *|* *TypeAliasForwardRef* *(* *'~manim.typing.Point3D'* *)*) – The first value
+  * **end** (*float* *|* *TypeAliasForwardRef* *(* *'~manim.typing.Point3D'* *)*) – The second value
 * **Return type:**
   The midpoint between the two values
 
