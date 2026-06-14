@@ -1,16 +1,23 @@
 # Rendering Text and Formulas
 
-There are two different ways by which you can render **Text** in videos:
+There are three different ways by which you can render **Text** in videos:
 
 1. Using Pango ([`text_mobject`](../reference/manim.mobject.text.text_mobject.md#module-manim.mobject.text.text_mobject))
 2. Using LaTeX ([`tex_mobject`](../reference/manim.mobject.text.tex_mobject.md#module-manim.mobject.text.tex_mobject))
+3. Using Typst ([`typst_mobject`](../reference/manim.mobject.text.typst_mobject.md#module-manim.mobject.text.typst_mobject))
 
-If you want to render simple text, you should use either [`Text`](../reference/manim.mobject.text.text_mobject.Text.md#manim.mobject.text.text_mobject.Text) or
-[`MarkupText`](../reference/manim.mobject.text.text_mobject.MarkupText.md#manim.mobject.text.text_mobject.MarkupText), or one of its derivatives like [`Paragraph`](../reference/manim.mobject.text.text_mobject.Paragraph.md#manim.mobject.text.text_mobject.Paragraph).
+Manim’s Pango-based text classes include [`Text`](../reference/manim.mobject.text.text_mobject.Text.md#manim.mobject.text.text_mobject.Text),
+[`MarkupText`](../reference/manim.mobject.text.text_mobject.MarkupText.md#manim.mobject.text.text_mobject.MarkupText), and derivatives such as [`Paragraph`](../reference/manim.mobject.text.text_mobject.Paragraph.md#manim.mobject.text.text_mobject.Paragraph).
 See [Text Without LaTeX](#using-text-objects) for more information.
 
-LaTeX should be used when you need mathematical typesetting. See
-[Text With LaTeX](#rendering-with-latex) for more information.
+LaTeX rendering is available via [`Tex`](../reference/manim.mobject.text.tex_mobject.Tex.md#manim.mobject.text.tex_mobject.Tex) and
+[`MathTex`](../reference/manim.mobject.text.tex_mobject.MathTex.md#manim.mobject.text.tex_mobject.MathTex). See [Text With LaTeX](#rendering-with-latex) for more
+information.
+
+Typst support is available via [`Typst`](../reference/manim.mobject.text.typst_mobject.Typst.md#manim.mobject.text.typst_mobject.Typst) and
+[`TypstMath`](../reference/manim.mobject.text.typst_mobject.TypstMath.md#manim.mobject.text.typst_mobject.TypstMath). It offers both general markup and mathematical
+typesetting through the Typst compiler without requiring a TeX
+distribution. See typst-mobjects for more information.
 
 <a id="using-text-objects"></a>
 
@@ -127,6 +134,34 @@ html), instead of just rendering plain text.
 
 Consult the documentation of [`MarkupText`](../reference/manim.mobject.text.text_mobject.MarkupText.md#manim.mobject.text.text_mobject.MarkupText) for more details
 and further references about PangoMarkup.
+
+<a id="rendering-with-typst"></a>
+
+## Text With Typst
+
+Manim also supports rendering text and formulas with Typst via
+[`Typst`](../reference/manim.mobject.text.typst_mobject.Typst.md#manim.mobject.text.typst_mobject.Typst) and [`TypstMath`](../reference/manim.mobject.text.typst_mobject.TypstMath.md#manim.mobject.text.typst_mobject.TypstMath).
+
+#### IMPORTANT
+Typst support requires the optional `typst` dependency. Install it with
+`pip install manim[typst]`.
+
+Typst mobjects compile Typst markup directly to SVG and import the result as
+vector graphics. This works both for general markup and for mathematical
+expressions.
+
+For mathematical expressions, use [`TypstMath`](../reference/manim.mobject.text.typst_mobject.TypstMath.md#manim.mobject.text.typst_mobject.TypstMath):
+
+Typst also supports selecting subexpressions via labels in the Typst source,
+or via Manim’s `{{ ... }}` shorthand in [`TypstMath`](../reference/manim.mobject.text.typst_mobject.TypstMath.md#manim.mobject.text.typst_mobject.TypstMath):
+
+```python
+eq = TypstMath("{{ a + b : lhs }} = {{ c }}")
+eq.select("lhs").set_color(BLUE)
+eq.select(0).set_color(YELLOW)
+```
+
+See typst-mobjects for more details and additional examples.
 
 <a id="rendering-with-latex"></a>
 
