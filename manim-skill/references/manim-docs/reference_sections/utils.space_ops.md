@@ -50,12 +50,18 @@ Returns polar coordinate theta when vector is projected on xy plane.
 ### cartesian_to_spherical(vec)
 
 Returns an array of numbers corresponding to each
-polar coordinate value (distance, phi, theta).
+spherical coordinate value `(r, theta, phi)`.
 
 * **Parameters:**
   **vec** ([*Vector3DLike*](manim.typing.md#manim.typing.Vector3DLike)) – A numpy array or a sequence of floats `[x, y, z]`.
+* **Returns:**
+  An array `[r, theta, phi]` where:
+  - `r` is the distance (radius) from the origin,
+  - `theta` is the azimuthal angle (angle in the xy-plane
+    from the positive x-axis),
+  - `phi` is the polar angle (angle from the positive z-axis).
 * **Return type:**
-  *ndarray*
+  np.ndarray
 
 ### center_of_mass(points)
 
@@ -422,13 +428,11 @@ coordinates given.
 * **Parameters:**
   **spherical** (*Sequence* *[**float* *]*) – 
 
-  A list of three floats that correspond to the following:
-
-  r - The distance between the point and the origin.
-
-  theta - The azimuthal angle of the point to the positive x-axis.
-
-  phi - The vertical angle of the point to the positive z-axis.
+  A sequence of three floats `(r, theta, phi)` where:
+  - `r` is the distance from the origin,
+  - `theta` is the azimuthal angle (angle in the xy-plane
+    from the positive x-axis),
+  - `phi` is the polar angle (angle from the positive z-axis).
 * **Return type:**
   *ndarray*
 
