@@ -19,12 +19,13 @@ Take the list of animations and a list of mobjects and output their hashes. This
 * **Return type:**
   `str`
 
-### get_json(obj)
+### get_json(obj, , include_pixel_array=False)
 
 Recursively serialize object to JSON using the `CustomEncoder` class.
 
 * **Parameters:**
-  **obj** (*Any*) – The dict to flatten
+  * **obj** (*Any*) – The dict to flatten
+  * **include_pixel_array** (*bool*) – Whether to include pixel arrays encountered while flattening the object.
 * **Returns:**
   The flattened object
 * **Return type:**
