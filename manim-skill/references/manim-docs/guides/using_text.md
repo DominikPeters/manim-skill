@@ -15,7 +15,7 @@ LaTeX rendering is available via [`Tex`](../reference/manim.mobject.text.tex_mob
 information.
 
 Typst support is available via [`Typst`](../reference/manim.mobject.text.typst_mobject.Typst.md#manim.mobject.text.typst_mobject.Typst) and
-[`TypstMath`](../reference/manim.mobject.text.typst_mobject.TypstMath.md#manim.mobject.text.typst_mobject.TypstMath). It offers both general markup and mathematical
+[`MathTypst`](../reference/manim.mobject.text.typst_mobject.MathTypst.md#manim.mobject.text.typst_mobject.MathTypst). It offers both general markup and mathematical
 typesetting through the Typst compiler without requiring a TeX
 distribution. See typst-mobjects for more information.
 
@@ -140,7 +140,7 @@ and further references about PangoMarkup.
 ## Text With Typst
 
 Manim also supports rendering text and formulas with Typst via
-[`Typst`](../reference/manim.mobject.text.typst_mobject.Typst.md#manim.mobject.text.typst_mobject.Typst) and [`TypstMath`](../reference/manim.mobject.text.typst_mobject.TypstMath.md#manim.mobject.text.typst_mobject.TypstMath).
+[`Typst`](../reference/manim.mobject.text.typst_mobject.Typst.md#manim.mobject.text.typst_mobject.Typst) and [`MathTypst`](../reference/manim.mobject.text.typst_mobject.MathTypst.md#manim.mobject.text.typst_mobject.MathTypst).
 
 #### IMPORTANT
 Typst support requires the optional `typst` dependency. Install it with
@@ -150,13 +150,13 @@ Typst mobjects compile Typst markup directly to SVG and import the result as
 vector graphics. This works both for general markup and for mathematical
 expressions.
 
-For mathematical expressions, use [`TypstMath`](../reference/manim.mobject.text.typst_mobject.TypstMath.md#manim.mobject.text.typst_mobject.TypstMath):
+For mathematical expressions, use [`MathTypst`](../reference/manim.mobject.text.typst_mobject.MathTypst.md#manim.mobject.text.typst_mobject.MathTypst):
 
 Typst also supports selecting subexpressions via labels in the Typst source,
-or via Manim’s `{{ ... }}` shorthand in [`TypstMath`](../reference/manim.mobject.text.typst_mobject.TypstMath.md#manim.mobject.text.typst_mobject.TypstMath):
+or via Manim’s `{{ ... }}` shorthand in [`MathTypst`](../reference/manim.mobject.text.typst_mobject.MathTypst.md#manim.mobject.text.typst_mobject.MathTypst):
 
 ```python
-eq = TypstMath("{{ a + b : lhs }} = {{ c }}")
+eq = MathTypst("{{ a + b : lhs }} = {{ c }}")
 eq.select("lhs").set_color(BLUE)
 eq.select(0).set_color(YELLOW)
 ```
