@@ -112,6 +112,11 @@ circle on your screen:
 self.play(Create(circle))  # show the circle on screen
 ```
 
+#### TIP
+All animations must reside within the [`construct()`](../reference/manim.scene.scene.Scene.md#manim.scene.scene.Scene.construct) method of a
+class derived from [`Scene`](../reference/manim.scene.scene.Scene.md#manim.scene.scene.Scene).  Other code, such as auxiliary
+or mathematical functions, may reside outside the class.
+
 ## Transforming a square into a circle
 
 With our circle animation complete, let’s move on to something a little more complicated.

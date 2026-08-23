@@ -151,6 +151,13 @@ is in the same directory as <file.py>,
 manim <file.py> SceneName
 ```
 
+#### TIP
+The names of the configuration options admissible in config files are
+exactly the same as the **long names** of the corresponding command-
+line flags.  For example, the `-c` and `--background_color` flags
+are interchangeable, but the config file only accepts
+`background_color` as an admissible option.
+
 Since config files are meant to replace CLI flags, all CLI flags can be set via
 a config file.  Moreover, any config option can be set via a config file,
 whether or not it has an associated CLI flag.  See the bottom of this document

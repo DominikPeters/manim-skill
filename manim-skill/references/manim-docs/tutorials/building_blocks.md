@@ -40,6 +40,11 @@ screen, as it is more general.
 Any object that can be displayed on the screen is a `mobject`, even if
 it is not necessarily *mathematical* in nature.
 
+#### TIP
+To see examples of classes derived from [`Mobject`](../reference/manim.mobject.mobject.Mobject.md#manim.mobject.mobject.Mobject), see the
+[`geometry`](../reference/manim.mobject.geometry.md#module-manim.mobject.geometry) module.  Most of these are in fact derived from
+[`VMobject`](../reference/manim.mobject.types.vectorized_mobject.VMobject.md#manim.mobject.types.vectorized_mobject.VMobject) as well.
+
 ### Creating and displaying mobjects
 
 As explained in [Quickstart](quickstart.md), usually all of the code in a manim
@@ -79,6 +84,23 @@ mobject passed as the first argument).  `align_to()` uses `LEFT` not as
 measuring units but as a way to determine the border to use for alignment.  The
 coordinates of the borders of a mobject are determined using an imaginary
 bounding box around it.
+
+#### TIP
+Many methods in manim can be chained together.  For example the two
+lines
+
+```python
+square = Square()
+square.shift(LEFT)
+```
+
+can be replaced by
+
+```python
+square = Square().shift(LEFT)
+```
+
+Technically, this is possible because most methods calls return the modified mobject.
 
 ### Styling mobjects
 
