@@ -48,7 +48,7 @@ To see examples of classes derived from [`Mobject`](../reference/manim.mobject.m
 ### Creating and displaying mobjects
 
 As explained in [Quickstart](quickstart.md), usually all of the code in a manim
-script is put inside the [`construct()`](../reference/manim.scene.scene.Scene.md#manim.scene.scene.Scene.construct) method of a [`Scene`](../reference/manim.scene.scene.Scene.md#manim.scene.scene.Scene) class.
+script is put inside the [`Scene.construct()`](../reference/manim.scene.scene.Scene.md#manim.scene.scene.Scene.construct) method of a [`Scene`](../reference/manim.scene.scene.Scene.md#manim.scene.scene.Scene) class.
 To display a mobject on the screen, call the [`add()`](../reference/manim.scene.scene.Scene.md#manim.scene.scene.Scene.add) method of the
 containing [`Scene`](../reference/manim.scene.scene.Scene.md#manim.scene.scene.Scene).  This is the principal way of displaying a mobject
 on the screen when it is not being animated.  To remove a mobject from the
