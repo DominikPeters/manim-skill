@@ -1,12 +1,12 @@
 ## scene.scene_file_writer
 # scene_file_writer
 
-The interface between scenes and ffmpeg.
+Scene output coordination and media-artifact assembly.
 
 ### Classes
 
-| [`SceneFileWriter`](manim.scene.scene_file_writer.SceneFileWriter.md#manim.scene.scene_file_writer.SceneFileWriter)   | SceneFileWriter is the object that actually writes the animations played, into video files, using FFMPEG.   |
-|-----------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------|
+| [`SceneFileWriter`](manim.scene.scene_file_writer.SceneFileWriter.md#manim.scene.scene_file_writer.SceneFileWriter)   | Coordinate segment jobs and assemble one scene's media artifacts.   |
+|-----------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------|
 
 ### Functions
 
@@ -18,11 +18,4 @@ The interface between scenes and ffmpeg.
   * **codec_name** (*str*)
 * **Return type:**
   None
-
-### to_av_frame_rate(fps)
-
-* **Parameters:**
-  **fps** (*float*)
-* **Return type:**
-  *Fraction*
 

@@ -143,7 +143,7 @@ Returns a list containing all the elements of l1 not in l2.
 
 * **Parameters:**
   * **l1** (*Iterable* *[*[*T*](#manim.utils.iterables.T) *]*)
-  * **l2** (*Iterable* *[*[*T*](#manim.utils.iterables.T) *]*)
+  * **l2** (*Iterable* *[*[*U*](#manim.utils.iterables.U) *]*)
 * **Return type:**
   list[[*T*](#manim.utils.iterables.T)]
 
@@ -162,9 +162,9 @@ Used instead of `set.update()` to maintain order,
 
 * **Parameters:**
   * **l1** (*Iterable* *[*[*T*](#manim.utils.iterables.T) *]*)
-  * **l2** (*Iterable* *[*[*T*](#manim.utils.iterables.T) *]*)
+  * **l2** (*Iterable* *[*[*U*](#manim.utils.iterables.U) *]*)
 * **Return type:**
-  list[[*T*](#manim.utils.iterables.T)]
+  list[[*T*](#manim.utils.iterables.T) | [*U*](#manim.utils.iterables.U)]
 
 ### listify(obj: str) → list[str]
 

@@ -54,16 +54,12 @@ Configure the rich style of logger and console output.
 #### SEE ALSO
 [`make_logger()`](#manim._config.logger_utils.make_logger)
 
-### set_file_logger(scene_name, module_name, log_dir)
+### set_file_logger(log_file_path)
 
-Add a file handler to manim logger.
-
-The path to the file is built using `config.log_dir`.
+Add a file handler for one exact, already resolved log path.
 
 * **Parameters:**
-  * **scene_name** (*str*) – The name of the scene, used in the name of the log file.
-  * **module_name** (*str*) – The name of the module, used in the name of the log file.
-  * **log_dir** (*Path*) – Path to the folder where log files are stored.
+  **log_file_path** (*Path*) – Exact path of the log file for this scene.
 * **Return type:**
   None
 
