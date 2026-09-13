@@ -241,9 +241,13 @@ Gets the midpoint of two points.
 
 ### normalize(vect, fall_back=None)
 
+Normalizes a vector to unit length while preserving its direction. If the vector
+has norm 0, a fallback vector is returned instead.
+
 * **Parameters:**
-  * **vect** (*ndarray* *|* *tuple* *[**float* *]*)
-  * **fall_back** (*ndarray* *|* *None*)
+  * **vect** (*ndarray* *|* *tuple* *[**float* *]*) – The vector to be normalized.
+  * **fall_back** (*ndarray* *|* *None*) – The vector to be returned if `vect` has norm 0. If `None`, a zero vector of
+    the same length as `vect` is returned.
 * **Return type:**
   *ndarray*
 

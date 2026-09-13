@@ -17,7 +17,7 @@ information.
 Typst support is available via [`Typst`](../reference/manim.mobject.text.typst_mobject.Typst.md#manim.mobject.text.typst_mobject.Typst) and
 [`MathTypst`](../reference/manim.mobject.text.typst_mobject.MathTypst.md#manim.mobject.text.typst_mobject.MathTypst). It offers both general markup and mathematical
 typesetting through the Typst compiler without requiring a TeX
-distribution. See typst-mobjects for more information.
+distribution. See [`typst_mobject`](../reference/manim.mobject.text.typst_mobject.md#module-manim.mobject.text.typst_mobject) for more information.
 
 <a id="using-text-objects"></a>
 
@@ -144,7 +144,9 @@ Manim also supports rendering text and formulas with Typst via
 
 #### IMPORTANT
 Typst support requires the optional `typst` dependency. Install it with
-`pip install manim[typst]`.
+`uv add "manim[typst]"` or `pip install "manim[typst]"`. The optional
+dependency includes the Typst compiler; no separate system installation is
+required.
 
 Typst mobjects compile Typst markup directly to SVG and import the result as
 vector graphics. This works both for general markup and for mathematical
@@ -161,7 +163,7 @@ eq.select("lhs").set_color(BLUE)
 eq.select(0).set_color(YELLOW)
 ```
 
-See typst-mobjects for more details and additional examples.
+See [`typst_mobject`](../reference/manim.mobject.text.typst_mobject.md#module-manim.mobject.text.typst_mobject) for more details and additional examples.
 
 <a id="rendering-with-latex"></a>
 
