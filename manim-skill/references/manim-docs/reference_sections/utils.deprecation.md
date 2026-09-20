@@ -13,9 +13,9 @@ TypeVar('T')
 
 ### Functions
 
-### deprecated(func: Callable[[...], [T](#manim.utils.deprecation.T)], since: str | None = None, until: str | None = None, replacement: str | None = None, message: str | None = '') → Callable[[...], [T](#manim.utils.deprecation.T)]
+### deprecated(func: Callable[[P], [T](#manim.utils.deprecation.T)], since: str | None = None, until: str | None = None, replacement: str | None = None, message: str | None = '') → Callable[[P], [T](#manim.utils.deprecation.T)]
 
-### deprecated(func: None = None, since: str | None = None, until: str | None = None, replacement: str | None = None, message: str | None = '') → Callable[[Callable[[...], [T](#manim.utils.deprecation.T)]], Callable[[...], [T](#manim.utils.deprecation.T)]]
+### deprecated(func: None = None, since: str | None = None, until: str | None = None, replacement: str | None = None, message: str | None = '') → Callable[[Callable[[P], [T](#manim.utils.deprecation.T)]], Callable[[P], [T](#manim.utils.deprecation.T)]]
 
 Decorator to mark a callable as deprecated.
 
@@ -23,7 +23,7 @@ The decorated callable will cause a warning when used. The docstring of the
 deprecated callable is adjusted to indicate that this callable is deprecated.
 
 * **Parameters:**
-  * **func** (*Callable* *[* *[* *...* *]* *,* [*T*](#manim.utils.deprecation.T) *]*  *|* *None*) – The function to be decorated. Should not be set by the user.
+  * **func** (*Callable* *[* *[* *~P* *]* *,* [*T*](#manim.utils.deprecation.T) *]*  *|* *None*) – The function to be decorated. Should not be set by the user.
   * **since** (*str* *|* *None*) – The version or date since deprecation.
   * **until** (*str* *|* *None*) – The version or date until removal of the deprecated callable.
   * **replacement** (*str* *|* *None*) – The identifier of the callable replacing the deprecated one.
@@ -113,7 +113,7 @@ replacements.
   * **since** (*str* *|* *None*) – The version or date since deprecation.
   * **until** (*str* *|* *None*) – The version or date until removal of the deprecated callable.
   * **message** (*str*) – The reason for why the callable has been deprecated.
-  * **redirections** (*None* *|* *Iterable* *[**tuple* *[**str* *,* *str* *]*  *|* *Callable* *[* *[* *...* *]* *,* *dict* *[**str* *,* *Any* *]* *]* *]*) – 
+  * **redirections** (*None* *|* *Iterable* *[**tuple* *[**str* *,* *str* *]*  *|* *Callable* *[* *[* *~P* *]* *,* *dict* *[**str* *,* [*T*](#manim.utils.deprecation.T) *]* *]* *]*) – 
 
     A list of parameter redirections. Each redirection can be one of the following:
     * A tuple of two strings. The first string defines the name of the deprecated
