@@ -19,7 +19,7 @@ Gets angle and axis from a quaternion.
 * **Parameters:**
   **quaternion** (*Sequence* *[**float* *]*) – The quaternion from which we get the angle and axis.
 * **Returns:**
-  Gives the angle and axis
+  The angle, in the range `[0, PI]`, and the axis it is measured about.
 * **Return type:**
   Sequence[float]
 
