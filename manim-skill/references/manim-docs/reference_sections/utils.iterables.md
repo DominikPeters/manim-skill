@@ -23,10 +23,16 @@ TypeVar('U')
 TypeVar('F', np.float64, np.int_)
 ```
 
-### *class* H
+### *class* H1
 
 ```default
-TypeVar('H', bound=Hashable)
+TypeVar('H1', bound=Hashable)
+```
+
+### *class* H2
+
+```default
+TypeVar('H2', bound=Hashable)
 ```
 
 ### Functions
@@ -130,41 +136,59 @@ Determines a hash, even of potentially mutable objects.
 * **Return type:**
   int
 
-### list_difference_update(l1, l2)
+### list_difference_update(l1: Iterable[[H1](#manim.utils.iterables.H1)], l2: Iterable[[H2](#manim.utils.iterables.H2)], , key: None = None) → list[[H1](#manim.utils.iterables.H1)]
 
-Returns a list containing all the elements of l1 not in l2.
+### list_difference_update(l1: Iterable[[T](#manim.utils.iterables.T)], l2: Iterable[[U](#manim.utils.iterables.U)], , key: Callable[[[T](#manim.utils.iterables.T) | [U](#manim.utils.iterables.U)], Hashable]) → list[[T](#manim.utils.iterables.T)]
+
+Returns a list containing all the elements of `l1` which are not present
+in `l2`.
+
+An optional key function can be provided to specify which elements
+should be considered equal.
+
+* **Parameters:**
+  * **l1** (*Iterable* *[*[*T*](#manim.utils.iterables.T) *]*) – The first iterable.
+  * **l2** (*Iterable* *[*[*U*](#manim.utils.iterables.U) *]*) – The second iterable.
+  * **key** (*Callable* *[* *[*[*T*](#manim.utils.iterables.T) *|* [*U*](#manim.utils.iterables.U) *]* *,* *Hashable* *]*  *|* *None*) – A key function which provides a value used to determine element equality. The
+    default value of `None` means that regular hashable equality will be used.
+* **Return type:**
+  list[[*T*](#manim.utils.iterables.T)]
 
 ### Examples
 
 ```pycon
->>> list_difference_update([1, 2, 3, 4], [2, 4])
-[1, 3]
+>>> list_difference_update([1, 2, 3, 4, 1], [2, 4])
+[1, 3, 1]
+>>> list_difference_update(["a", "b", "A", "C"], ["A", "D"], key=str.lower)
+['b', 'C']
 ```
 
+### list_update(l1: Iterable[[H1](#manim.utils.iterables.H1)], l2: Iterable[[H2](#manim.utils.iterables.H2)], , key: None = None) → list[[H1](#manim.utils.iterables.H1) | [H2](#manim.utils.iterables.H2)]
+
+### list_update(l1: Iterable[[T](#manim.utils.iterables.T)], l2: Iterable[[U](#manim.utils.iterables.U)], , key: Callable[[[T](#manim.utils.iterables.T) | [U](#manim.utils.iterables.U)], Hashable]) → list[[T](#manim.utils.iterables.T) | [U](#manim.utils.iterables.U)]
+
+Returns a new list containing all the elements of `l1` which are not present in
+`l2`, followed by all the elements of `l2`. Element order is preserved.
+
+An optional key function can be provided to specify which elements
+should be considered equal.
+
 * **Parameters:**
-  * **l1** (*Iterable* *[*[*T*](#manim.utils.iterables.T) *]*)
-  * **l2** (*Iterable* *[*[*U*](#manim.utils.iterables.U) *]*)
+  * **l1** (*Iterable* *[*[*T*](#manim.utils.iterables.T) *]*) – The first iterable.
+  * **l2** (*Iterable* *[*[*U*](#manim.utils.iterables.U) *]*) – The second iterable.
+  * **key** (*Callable* *[* *[*[*T*](#manim.utils.iterables.T) *|* [*U*](#manim.utils.iterables.U) *]* *,* *Hashable* *]*  *|* *None*) – A key function which provides a value used to determine element equality. The
+    default value of `None` means that regular hashable equality will be used.
 * **Return type:**
-  list[[*T*](#manim.utils.iterables.T)]
-
-### list_update(l1, l2)
-
-Used instead of `set.update()` to maintain order,
-: making sure duplicates are removed from l1, not l2.
-  Removes overlap of l1 and l2 and then concatenates l2 unchanged.
+  list[[*T*](#manim.utils.iterables.T) | [*U*](#manim.utils.iterables.U)]
 
 ### Examples
 
 ```pycon
 >>> list_update([1, 2, 3], [2, 4, 4])
 [1, 3, 2, 4, 4]
+>>> list_update(["a", "b", "c", "A", "B", "C"], ["A", "b", "D"], key=str.lower)
+['c', 'C', 'A', 'b', 'D']
 ```
-
-* **Parameters:**
-  * **l1** (*Iterable* *[*[*T*](#manim.utils.iterables.T) *]*)
-  * **l2** (*Iterable* *[*[*U*](#manim.utils.iterables.U) *]*)
-* **Return type:**
-  list[[*T*](#manim.utils.iterables.T) | [*U*](#manim.utils.iterables.U)]
 
 ### listify(obj: str) → list[str]
 
@@ -246,9 +270,9 @@ Used instead of `list(set(l))` to maintain order.
 Keeps the last occurrence of each element.
 
 * **Parameters:**
-  **lst** (*Reversible* *[*[*H*](#manim.utils.iterables.H) *]*)
+  **lst** (*Reversible* *[*[*H1*](#manim.utils.iterables.H1) *]*)
 * **Return type:**
-  list[[*H*](#manim.utils.iterables.H)]
+  list[[*H1*](#manim.utils.iterables.H1)]
 
 ### remove_nones(sequence)
 
