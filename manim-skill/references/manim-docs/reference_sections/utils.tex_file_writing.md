@@ -50,7 +50,7 @@ Takes a tex expression (and an optional tex environment),
 and returns a fully formed tex file ready for compilation.
 
 * **Parameters:**
-  * **expression** (*str*) – String containing the TeX expression to be rendered, e.g. `\\sqrt{2}` or `foo`
+  * **expression** (*str*) – String containing the TeX expression to be rendered, e.g. `\sqrt{2}` or `foo`
   * **environment** (*str* *|* *None*) – The string containing the environment in which the expression should be typeset, e.g. `align*`
   * **tex_template** ([*TexTemplate*](manim.utils.tex.TexTemplate.md#manim.utils.tex.TexTemplate) *|* *None*) – Template class used to typesetting. If not set, use default template set via config[“tex_template”]
 * **Returns:**
@@ -117,7 +117,7 @@ and all necessary CLI flags.
 Takes a tex expression and returns the svg version of the compiled tex
 
 * **Parameters:**
-  * **expression** (*str*) – String containing the TeX expression to be rendered, e.g. `\\sqrt{2}` or `foo`
+  * **expression** (*str*) – String containing the TeX expression to be rendered, e.g. `\sqrt{2}` or `foo`
   * **environment** (*str* *|* *None*) – The string containing the environment in which the expression should be typeset, e.g. `align*`
   * **tex_template** ([*TexTemplate*](manim.utils.tex.TexTemplate.md#manim.utils.tex.TexTemplate) *|* *None*) – Template class used to typesetting. If not set, use default template set via config[“tex_template”]
 * **Returns:**
