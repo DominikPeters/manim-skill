@@ -728,7 +728,7 @@ which then takes care of several things:
   animation. The processed animations are then stored in the `animations`
   attribute of the scene (which the renderer later reads…).
 - It adds all mobjects to which the animations that are played are
-  bound to to the scene (provided the animation is not an mobject-introducing
+  bound to the scene (provided the animation is not an mobject-introducing
   animation – for these, the addition to the scene happens later).
 - In case the played animation is a [`Wait`](../reference/manim.animation.animation.Wait.md#manim.animation.animation.Wait) animation (this is the
   case in a [`Scene.wait()`](../reference/manim.scene.scene.Scene.md#manim.scene.scene.Scene.wait) call), the method checks whether a static
