@@ -234,10 +234,10 @@ method. Inspecting the corresponding code (see
 reveals that `Scene.__init__` first sets several attributes of the scene objects that do not
 depend on any configuration options set in `config`. Then the scene inspects the value of
 `config.renderer`, and based on its value, either instantiates a `CairoRenderer` or an
-`OpenGLRenderer` object and assigns it to its `renderer` attribute.
+`OpenGLRenderer` object, exposed by its read-only `renderer` property.
 
 After selecting the renderer, the scene resolves the mutable configuration into
-one immutable render-session specification. In abbreviated form, initialization
+an immutable *render-session specification*. In abbreviated form, initialization
 continues as follows:
 
 ```default
@@ -263,16 +263,17 @@ self.file_writer_settings = _SceneFileWriterSettings(
 self.renderer.init_scene(
     self,
     self.session_spec,
-    self.file_writer_settings,
 )
 ```
 
-The session specification separates primary artifact intent (an `OutputSpec`)
-from presentation requests such as opening the completed artifact or displaying
-a live preview. For video output it also contains the resolved segment profile:
-container, codec, pixel format, dimensions, exact frame rate, and codec options.
-It records dry-run execution separately from artifact selection. A dry run
-requests semantic scene evaluation without rasterizing
+The session specification separates *primary artifact* intent (an `OutputSpec`
+which defines the type of file we wish Manim to create based on our scene) from
+*presentation requests* such as displaying a live preview or opening the
+artifact after rendering finishes.
+When the primary artifact is a video, the session specification also contains
+information about the video codec, pixel format, dimension, frame rate, etc.
+The specification also separately records requests for *dry-run execution*.
+A dry run requests semantic scene evaluation without rasterizing
 frames or using media and cache resources. In contrast, `format = none` only
 suppresses the primary artifact; an OpenGL live preview with automatic output
 still rasterizes and displays frames without writing a file. Both requests have
@@ -286,34 +287,55 @@ Cairo rejects live preview, while OpenGL advertises support for it. A concrete
 format records the live preview as well.
 
 The scene then resolves existing directory templates once into an immutable
-output plan containing exact scene-specific artifact, section, image-sequence,
-and cache paths. Planning performs no file I/O and creates no directories. The
-resolved format determines the artifact suffix; `output_file` supplies only a
-name and cannot change the format.
+*output plan* containing scene-specific output paths for the artifact, sections,
+image-sequences, and cached files. If any of these paths contain directories
+which do not exist, those directories will be created when a file writer needs
+to use them and not at this point in time.
+The resolved output format determines the file extension; `output_file` supplies
+a name rather than overriding that format.
 
-The scene combines the output plan and segment profile with the encoder-pool,
-cache-maintenance, and sound-asset inputs in immutable
-`_SceneFileWriterSettings`. Both renderers instantiate a
-[`SceneFileWriter`](../reference/manim.scene.scene_file_writer.SceneFileWriter.md#manim.scene.scene_file_writer.SceneFileWriter) from these settings. The writer does not retain a
-renderer reference or read mutable global configuration. Directories are created
-lazily when their owning operation first writes. The writer remains Manim’s
-interface to `libav` for media assembly. The Cairo renderer (see the
-implementation [here](https://github.com/ManimCommunity/manim/blob/main/manim/renderer/cairo_renderer.py))
-does not require further renderer-specific initialization. OpenGL creates a
-window only when the resolved presentation specification requests a live preview.
-The `-p` / `--preview` option does not create this window; it opens the
-completed artifact after rendering.
+The scene stores the output plan, video encoding settings, cache limits, and
+sound-asset directory in `_SceneFileWriterSettings`. The [`Manager`](../reference/manim.manager.Manager.md#manim.manager.Manager) uses
+these settings to create a [`SceneFileWriter`](../reference/manim.scene.scene_file_writer.SceneFileWriter.md#manim.scene.scene_file_writer.SceneFileWriter) when rendering starts, before
+`setup()`. Accessing `manager.file_writer` or `renderer.file_writer` also
+creates this writer if needed. Both properties return the same writer for the
+rest of the scene. To customize it, pass `file_writer_class` when constructing
+the renderer.
 
-After the renderer has been instantiated and initialized its file writer, the scene
-populates further initial attributes (notable mention: the `mobjects` attribute
-which keeps track of the mobjects that have been added to the scene). Its `manager`
-attribute is initially `None` unless the caller attaches a manager explicitly.
+The writer uses the saved settings to encode and assemble media through `libav`.
+It creates directories as it writes files. A snapshot from `scene.get_image()`
+uses just the renderer, leaving the writer uninitialized if it has not been used.
 
-#### WARNING
-The scene captures the immutable session specification and output plan before
-renderer initialization. The manager coordinates the scene lifecycle, while
-the renderer still owns its camera, clock, play count, skip state, and file
-writer. The manager exposes these through forwarding properties.
+**Creating graphics resources.** Renderer initialization stores the settings for
+later use. The two backends create their drawing resources at different points:
+
+- Cairo allocates an image buffer and drawing context on the first draw or request
+  for pixels.
+- OpenGL creates its context and framebuffer when `Manager.render()` starts,
+  before `setup()`. An explicit request for GPU resources, such as accessing
+  `renderer.context`, creates them sooner. A live-preview request also opens a
+  window. A snapshot requested before this initialization uses a temporary context
+  without a window.
+
+The `-p` / `--preview` option opens the completed output file after rendering;
+it is separate from OpenGL’s live-preview window.
+
+Scene initialization also prepares `mobjects`, the list of mobjects added to the
+scene, and sets `manager` to `None`. The manager is lazily created: the
+first time a call is made which requires a manager, such as `render()` or
+`get_image()`, a new manager is created and attached to the scene as
+`scene.manager`. This manager is then reused for any subsequent calls.
+
+**One renderer per scene.** A scene keeps the renderer selected at construction;
+`scene.renderer` is read-only. Successive plays reuse that renderer and its
+writer. For another scene, create a new renderer or let the scene create its
+default. The renderer stores the camera and drawing resources. The manager stores
+the animation clock, play count, and skip state; the renderer’s corresponding
+properties read and update those values.
+
+The CLI creates a fresh scene for each selected class and each interactive rerun,
+on both Cairo and OpenGL. It closes the previous run’s resources before creating
+the next scene, which starts with a new camera and animation clock.
 
 The rest of this article is concerned with the last line in our toy example script:
 
@@ -348,12 +370,42 @@ Otherwise, the manager asks the renderer to finish the scene. For Cairo this
 calls `CairoRenderer.scene_finished()`, which tells the
 [`SceneFileWriter`](../reference/manim.scene.scene_file_writer.SceneFileWriter.md#manim.scene.scene_file_writer.SceneFileWriter) to finish any time-based output. For video output, the
 file writer waits for partial movie files that are still being encoded and
-combines them into the final movie. Last-frame PNG output fast-forwards
-animations and renders a single image. When automatic output selected a video
-for a scene without play calls, the writer saves that image as a fallback PNG and
+combines them into the final movie. For last-frame PNG output, the animations
+run without drawing (see below), and a single image is drawn at the end.
+When automatic output selected a video for a scene without play calls, the
+writer saves that image as a fallback PNG and
 the manager logs a warning. The writer records the completed artifact as
 `final_file_path`. After finalization, the manager uses the presentation
 specification to open the artifact or reveal it in the file browser.
+
+**Closing resources and inspecting results.** By default, rendering closes the
+renderer once the output is complete. To read the last-rendered frame directly
+from the renderer, keep it open with a `with manager:` block:
+
+```default
+scene = ToyExample()
+manager = Manager(scene)
+with manager:
+    manager.render()
+    last_frame = manager.renderer.get_frame()
+```
+
+The renderer stays open after successful rendering until the end of the `with`
+block. The scene and its mobjects remain available afterward. To draw a new image,
+call `scene.get_image()`; it creates temporary rendering resources as needed.
+OpenGL meshes stored directly on the GPU require their original context, so these
+must be inspected inside the block.
+
+When file logging is enabled, the manager opens the scene’s log at the start of
+rendering or the first direct `play()` call. It removes and closes that handler
+when rendering ends or the manager closes, leaving other log handlers in place.
+If rendering fails, the manager stops unfinished encoding work and closes the
+renderer before raising the original error. Errors from cleanup are logged
+separately. A failed `play()` call only discards its own unfinished output and
+restores the scene time, so code that handles the error, such as an interactive
+session, can keep playing animations. Put animation code in `setup()` or
+`construct()` so it runs within the normal render lifecycle; custom file or
+process operations need their own cleanup.
 
 **Back in our toy example,** the call to [`Scene.render()`](../reference/manim.scene.scene.Scene.md#manim.scene.scene.Scene.render) creates a manager,
 then [`Manager.render()`](../reference/manim.manager.Manager.md#manim.manager.Manager.render) triggers [`Scene.setup()`](../reference/manim.scene.scene.Scene.md#manim.scene.scene.Scene.setup) (which only consists of
@@ -686,37 +738,52 @@ initialized and ready to be played.
 We are finally there, the render loop is in our reach. Let us
 walk through the code that is run when [`Scene.play()`](../reference/manim.scene.scene.Scene.md#manim.scene.scene.Scene.play) is called.
 
-#### HINT
-Recall that this article is specifically about the Cairo renderer.
-Up to here, things were more or less the same for the OpenGL renderer
-as well; while some base mobjects might be different, the control flow
-and lifecycle of mobjects is still more or less the same. There are more
-substantial differences when it comes to the rendering loop.
+Both Cairo and OpenGL use the same *run loop* in [`Manager`](../reference/manim.manager.Manager.md#manim.manager.Manager). The scene
+prepares animations and updates mobjects. The run loop steps through every frame
+of the animation and reports each step to a few *listeners*: the *encoder* draws
+frames and sends them to the file writer, or reuses a cached partial movie file;
+the *preview* shows frames in OpenGL’s window; and a progress bar shows how far
+the play has come. A frame is drawn only when a listener needs its image, and
+only once. We will follow Cairo’s drawing operations below.
 
-As you will see when inspecting the method, [`Scene.play()`](../reference/manim.scene.scene.Scene.md#manim.scene.scene.Scene.play) first handles
-an OpenGL interactive-thread guard and then delegates to [`Manager.play()`](../reference/manim.manager.Manager.md#manim.manager.Manager.play).
-The manager records the current renderer time and calls the renderer’s `play`
-method, in our case `CairoRenderer.play()`. Once the renderer returns, the
-manager uses the elapsed time to schedule an optional subcaption (see
-[`Scene.play()`](../reference/manim.scene.scene.Scene.md#manim.scene.scene.Scene.play) and [`Scene.add_subcaption()`](../reference/manim.scene.scene.Scene.md#manim.scene.scene.Scene.add_subcaption) for more information).
+[`Scene.play()`](../reference/manim.scene.scene.Scene.md#manim.scene.scene.Scene.play) passes the request to [`Manager.play()`](../reference/manim.manager.Manager.md#manim.manager.Manager.play). During OpenGL
+interaction, calls from another thread are queued for the rendering thread first.
+The manager records the start time so that, after playback, it can place an
+optional subcaption using the elapsed animation time (see
+[`Scene.add_subcaption()`](../reference/manim.scene.scene.Scene.md#manim.scene.scene.Scene.add_subcaption)).
 
-#### WARNING
-The manager currently coordinates the call but deliberately preserves the
-existing renderer implementation. Most compilation, caching, frame iteration,
-and output behavior described in the following paragraphs still belongs to the
-renderer and scene during this transitional stage.
+The frame rate is saved when the scene is created. Create and render the scene
+under the same frame-rate configuration, for example:
 
-Inside `CairoRenderer.play()`, the renderer first checks whether
-it may skip rendering of the current play call. This might happen, for example,
-when `-s` is passed to the CLI (i.e., only the last frame should be rendered),
-or when the `-n` flag is passed and the current play call is outside of the
-specified render bounds. The “skipping status” is updated in form of the
-call to `CairoRenderer.update_skipping_status()`.
+```default
+with tempconfig({"frame_rate": 30}):
+    scene = ToyExample()
+    scene.render()
+```
 
-Next, the renderer asks the scene to process the animations in the play
-call so that renderer obtains all of the information it needs. To
-be more concrete, [`Scene.compile_animation_data()`](../reference/manim.scene.scene.Scene.md#manim.scene.scene.Scene.compile_animation_data) is called,
-which then takes care of several things:
+Changing `config.frame_rate` between construction and playback raises an error:
+the animation steps must use the same rate as the saved video encoding settings.
+
+To run the animation steps without drawing frames or producing media, see
+[Evaluating a scene](evaluation.md).
+
+First, the manager decides whether this play call is part of the output. For
+example, `-s` requests only the final image, `-n` selects a range of play
+calls, and a section with `skip_animations=True` leaves its plays out. A play
+that is not part of the output is not drawn, but later plays start from the same
+state as in a full render: if updaters or a stop condition run per frame, the play
+steps through every frame; otherwise nothing can tell the frames in between apart,
+and it goes to its last frame in one step. While such a play runs, `manager.skip_animations` is `True`; the
+renderer’s property reads the same value.
+
+Sounds are placed at scene time, independently of the plays. All sounds of a
+scene are mixed into one track, and when the movie is assembled, only the parts
+of the track that the movie shows are kept. A play left out of the output
+therefore cuts sound like it cuts the video, and reusing a cached segment does
+not change the audio. Subcaptions and section videos are placed the same way.
+
+Next, the manager calls [`Scene.compile_animation_data()`](../reference/manim.scene.scene.Scene.md#manim.scene.scene.Scene.compile_animation_data) to prepare the
+animations. This happens once per play call and includes the following steps:
 
 - The method processes all animations and the keyword arguments passed
   to the initial [`Scene.play()`](../reference/manim.scene.scene.Scene.md#manim.scene.scene.Scene.play) call. In particular, this means
@@ -726,7 +793,7 @@ which then takes care of several things:
   any animation-related keyword arguments (like `run_time`,
   or `rate_func`) passed to `Scene.play` to each individual
   animation. The processed animations are then stored in the `animations`
-  attribute of the scene (which the renderer later reads…).
+  attribute of the scene for the manager to use during playback.
 - It adds all mobjects to which the animations that are played are
   bound to the scene (provided the animation is not an mobject-introducing
   animation – for these, the addition to the scene happens later).
@@ -740,31 +807,32 @@ which then takes care of several things:
   at this point is computed as the maximum of the run times of the passed
   animations). This is stored in the `duration` attribute of the scene.
 
-After the animation data has been compiled by the scene, the renderer
-continues to prepare for entering the render loop. It now checks the
-skipping status which has been determined before. If the renderer can
-skip this play call, it does so: it sets the current play call hash (which
-we will get back to in a moment) to `None` and increases the time of the
-renderer by the determined animation run time.
+**Caching.** If caching is enabled, the encoder computes a key with
+[`get_hash_from_play_call()`](../reference/manim.utils.hashing.md#manim.utils.hashing.get_hash_from_play_call) and asks the file writer whether a matching
+partial movie file exists. A match lets Manim reuse that file: the play runs
+like a play left out of the output, without drawing or encoding its frames.
 
-Otherwise, the renderer checks whether or not Manim’s caching system should
-be used. The idea of the caching system is simple: for every play call, a
-hash value is computed, which is then stored and upon re-rendering the scene,
-the hash is generated again and checked against the stored value. If it is the
-same, the cached output is reused, otherwise it is fully rerendered again.
-We will not go into details of the caching system here; if you would like
-to learn more, the [`get_hash_from_play_call()`](../reference/manim.utils.hashing.md#manim.utils.hashing.get_hash_from_play_call) function in the
-[`utils.hashing`](../reference/manim.utils.hashing.md#module-manim.utils.hashing) module is essentially the entry point to the caching
-mechanism.
+The key includes the play call’s start time and the frame rate as well as its
+visual inputs. The start time is there because animations and updaters can read
+the scene time, so the same inputs at another time can give other frames. A
+change that moves later plays in time, such as an inserted wait, therefore renders
+them again; another render of the same scene can still reuse its segments. Waits with a stop condition are always rendered again: when such a wait
+stops can depend on state that the key does not include, so a cached movie file
+could have the wrong length.
 
-In the event that the animation has to be rendered, the renderer gives its
+#### NOTE
+Cache keys do not include external state that the scene’s code reads, such as
+files or the current date. Use `--disable_caching` to render without reusing
+partial movie files.
+
+In the event that the animation has to be rendered, the encoder gives the
 [`SceneFileWriter`](../reference/manim.scene.scene_file_writer.SceneFileWriter.md#manim.scene.scene_file_writer.SceneFileWriter) the current animation index and asks it to start a
 segment job. The writer creates a `VideoSegmentEncoder` from the resolved
 profile and wraps it in a `_PartialMovieEncodeJob`. The synchronous segment
 encoder owns its container, video stream, sequential presentation timestamps,
 and target cleanup. The job owns only the frame queue and worker thread. During
 the render loop, concrete top-left-origin `uint8` RGBA arrays are added to the
-queue and encoded by the worker. With the writing process in place, the renderer
+queue and encoded by the worker. With the writing process in place, the manager
 then asks the scene to “begin” the animations.
 
 By default, Manim finishes encoding each partial movie file before rendering the
@@ -782,13 +850,11 @@ animation suspends updater functions being called on its mobject, and
 it sets its mobject to the state that corresponds to the first frame
 of the animation.
 
-After this has happened for all animations in the current `play` call,
-the Cairo renderer determines which of the scene’s mobjects can be
-painted statically to the background, and which ones have to be
-redrawn every frame. It does so by calling
-`Scene.get_moving_and_static_mobjects()`, and the resulting
-partition of mobjects is stored in the corresponding `moving_mobjects`
-and `static_mobjects` attributes.
+After starting the animations, [`Scene.begin_animations()`](../reference/manim.scene.scene.Scene.md#manim.scene.scene.Scene.begin_animations) also prepares
+Cairo’s lists of moving and static mobjects. It calls
+`Scene.get_moving_and_static_mobjects()` and stores the result in
+`moving_mobjects` and `static_mobjects`. The renderer uses these lists to
+reuse the background image while redrawing the moving mobjects.
 
 #### NOTE
 The mechanism that determines static and moving mobjects is
@@ -806,20 +872,14 @@ Before we enter the render loop, let us briefly revisit our toy
 example and discuss how the generic [`Scene.play()`](../reference/manim.scene.scene.Scene.md#manim.scene.scene.Scene.play) call
 setup looks like there.
 
-For the call that plays the [`ReplacementTransform`](../reference/manim.animation.transform.ReplacementTransform.md#manim.animation.transform.ReplacementTransform), there
-is no subcaption for the manager to schedule. The manager forwards the call,
-and the renderer then asks the scene to compile the animation data: the passed
-argument already is an animation (no additional preparations needed),
-there is no need for processing any keyword arguments (as
-we did not specify any additional ones to `play`). The
-mobject bound to the animation, `orange_square`, is already
-part of the scene (so again, no action taken). Finally, the run
-time is extracted (3 seconds long) and stored in
-`Scene.duration`. The renderer then checks whether it should
-skip (it should not), then whether the animation is already
-cached (it is not). The corresponding animation hash value is
-determined and passed to the file writer. The writer resolves the segment target
-from that key and starts its queued encoder, which waits for rendered frames.
+For the [`ReplacementTransform`](../reference/manim.animation.transform.ReplacementTransform.md#manim.animation.transform.ReplacementTransform) call, the manager has no subcaption to
+schedule and no request to skip rendering. It asks the scene to prepare the
+animation: the argument is already an animation, no extra keyword arguments were
+passed to `play`, and `orange_square` is already in the scene. The scene saves
+the animation’s run time, 3 seconds, in `duration`. Assuming this is the first
+render, there is no cached movie to reuse. The manager passes the computed cache
+key to the file writer, which opens an encoding job for the partial movie and
+waits for frames.
 
 The scene then `begin`s the animation: for the
 [`ReplacementTransform`](../reference/manim.animation.transform.ReplacementTransform.md#manim.animation.transform.ReplacementTransform) this means that the animation populates
@@ -844,7 +904,8 @@ it partially renders a scene (to produce a background image), and then
 when iterating through the time progression of the animation only the
 “moving mobjects” are re-painted on top of the static background.
 
-The renderer calls `CairoRenderer.save_static_frame_data()`, which
+When the first frame of a play is drawn,
+`CairoRenderer.save_static_frame_data()` is called, which
 first checks whether there are currently any static mobjects, and if there
 are, it updates the frame (only with the static mobjects; more about how
 exactly this works in a moment) and then saves a NumPy array representing
@@ -852,11 +913,11 @@ the rendered frame in the `static_image` attribute. In our toy example,
 there are no static mobjects, and so the `static_image` attribute is
 simply set to `None`.
 
-Next, the renderer asks the scene whether the current animation is
-a “frozen frame” animation, which would mean that the renderer actually
-does not have to repaint the moving mobjects in every frame of the time
-progression. It can then just take the latest static frame, and display it
-throughout the animation.
+Next, the manager checks whether this is a frozen wait. If so, the run loop
+reports a single frame that is shown `int(duration * frame_rate)` times. The
+encoder draws it once and passes it to the writer with that repeat count, and the
+clock advances by that many frames without updating the mobjects again. OpenGL
+also holds the frame in its preview window for the requested wait duration.
 
 #### NOTE
 An animation is considered a “frozen frame” animation if only a
@@ -865,28 +926,20 @@ of [`Scene.compile_animation_data()`](../reference/manim.scene.scene.Scene.md#ma
 implementation of [`Scene.should_update_mobjects()`](../reference/manim.scene.scene.Scene.md#manim.scene.scene.Scene.should_update_mobjects) for
 more details.
 
-If this is not the case (just as in our toy example), the renderer
-then calls the [`Scene.play_internal()`](../reference/manim.scene.scene.Scene.md#manim.scene.scene.Scene.play_internal) method, which is the
-integral part of the render loop (in which the library steps through
-the time progression of the animation and renders the corresponding
-frames).
+For a non-frozen animation, such as our transformation, the manager steps through
+the animation and requests a frame at each time stamp. Here is how it does that:
 
-Within [`Scene.play_internal()`](../reference/manim.scene.scene.Scene.md#manim.scene.scene.Scene.play_internal), the following steps are performed:
-
-- The scene determines the run time of the animations by calling
+- The manager determines the run time of the animations by calling
   [`Scene.get_run_time()`](../reference/manim.scene.scene.Scene.md#manim.scene.scene.Scene.get_run_time). This method basically takes the maximum
   `run_time` attribute of all of the animations passed to the
   [`Scene.play()`](../reference/manim.scene.scene.Scene.md#manim.scene.scene.Scene.play) call.
-- Then the *time progression* is constructed via the (internal)
-  [`Scene._get_animation_time_progression()`](../reference/manim.scene.scene.Scene.md#manim.scene.scene.Scene._get_animation_time_progression) method, which wraps
-  the actual [`Scene.get_time_progression()`](../reference/manim.scene.scene.Scene.md#manim.scene.scene.Scene.get_time_progression) method. The time
-  progression is a `tqdm` [progress bar object](https://tqdm.github.io)
-  for an iterator over `np.arange(0, run_time, 1 / config.frame_rate)`. In
-  other words, the time progression holds the time stamps (relative to the
-  current animations, so starting at 0 and ending at the total animation run time,
-  with the step size determined by the render frame rate) of the timeline where
-  a new animation frame should be rendered.
-- Then the scene iterates over the time progression: for each time stamp `t`,
+- The time stamps of the frames are `i / frame_rate` for `i = 0, 1, ...`,
+  relative to the start of the play, for every frame that starts before the total
+  run time (see `manim._run.frames.frame_count`, which allows for rounding, so
+  that 0.28 seconds at 25 fps are exactly 7 frames). The progress bar listener
+  shows a `tqdm` [progress bar](https://tqdm.github.io) that counts them,
+  stored in `scene.time_progression`.
+- Then the run loop goes through these time stamps: for each time stamp `t`,
   `Scene.update_to_time()` is called, which …
   - … first computes the time passed since the last update (which might be 0,
     especially for the initial call) and references it as `dt`,
@@ -904,62 +957,61 @@ Within [`Scene.play_internal()`](../reference/manim.scene.scene.Scene.md#manim.s
     the scene itself are run.
 
 At this point, the internal (Python) state of all mobjects has been updated
-to match the currently processed timestamp. If rendering should not be skipped,
-then it is now time to *take a picture*!
+to match the currently processed timestamp. If the play is part of the output,
+it is now time to *take a picture*!
 
-#### NOTE
-The update of the internal state (iteration over the time progression) happens
-*always* once [`Scene.play_internal()`](../reference/manim.scene.scene.Scene.md#manim.scene.scene.Scene.play_internal) is entered. This ensures that even
-if frames do not need to be rendered (because, e.g., the `-n` CLI flag has
-been passed, something has been cached, or because we might be in a *Section*
-with skipped rendering), updater functions still run correctly, and the state
-of the first frame that *is* rendered is kept consistent.
-
-To render an image, the scene calls the corresponding method of its renderer,
+To render an image, the encoder calls the corresponding method of the renderer,
 `CairoRenderer.render()` and passes just the list of *moving mobjects* (remember,
 the *static mobjects* are assumed to have already been painted statically to
 the background of the scene). All of the hard work then happens when the renderer
-updates its current frame via a call to `CairoRenderer.update_frame()`:
+updates its current frame via a call to [`CairoRenderer.update_frame()`](../reference/manim.renderer.cairo.renderer.CairoRenderer.md#manim.renderer.cairo.renderer.CairoRenderer.update_frame):
 
-First, the renderer prepares its [`Camera`](../reference/manim.camera.camera.Camera.md#manim.camera.camera.Camera) by checking whether the renderer
-has a `static_image` different from `None` stored already. If so, it sets the
-image as the *background image* of the camera via `Camera.set_frame_to_background()`,
-and otherwise it just resets the camera via [`Camera.reset()`](../reference/manim.camera.camera.Camera.md#manim.camera.camera.Camera.reset). The camera is then
-asked to capture the scene with a call to [`Camera.capture_mobjects()`](../reference/manim.camera.camera.Camera.md#manim.camera.camera.Camera.capture_mobjects).
+First, the renderer prepares its Cairo image buffer. If a reusable `static_image`
+is available, the renderer copies it into that buffer; otherwise it resets the buffer
+using the camera’s background color or image. Background images are resized to match
+the buffer’s dimensions.
 
-Things get a bit technical here, and at some point it is more efficient to
-delve into the implementation – but here is a summary of what happens once the
-camera is asked to capture the scene:
+Things get a bit technical here, and at some point it is more efficient to delve into
+the implementation – but the drawing process can be summarized as follows:
 
-- First, a flat list of mobjects is created (so submobjects get extracted from
-  their parents). This list is then processed in groups of the same type of
-  mobjects (e.g., a batch of vectorized mobjects, followed by a batch of image mobjects,
-  followed by more vectorized mobjects, etc. – in many cases there will just be
-  one batch of vectorized mobjects).
-- Depending on the type of the currently processed batch, the camera uses dedicated
-  *display functions* to convert the [`Mobject`](../reference/manim.mobject.mobject.Mobject.md#manim.mobject.mobject.Mobject) Python object to
-  a NumPy array stored in the camera’s `pixel_array` attribute.
-  The most important example in that context is the display function for
-  vectorized mobjects, [`Camera.display_multiple_vectorized_mobjects()`](../reference/manim.camera.camera.Camera.md#manim.camera.camera.Camera.display_multiple_vectorized_mobjects),
-  or the more particular (in case you did not add a background image to your
-  [`VMobject`](../reference/manim.mobject.types.vectorized_mobject.VMobject.md#manim.mobject.types.vectorized_mobject.VMobject)), [`Camera.display_multiple_non_background_colored_vmobjects()`](../reference/manim.camera.camera.Camera.md#manim.camera.camera.Camera.display_multiple_non_background_colored_vmobjects).
-  This method first gets the current Cairo context, and then, for every (vectorized)
-  mobject in the batch, calls [`Camera.display_vectorized()`](../reference/manim.camera.camera.Camera.md#manim.camera.camera.Camera.display_vectorized). There,
-  the actual background stroke, fill, and then stroke of the mobject is
-  drawn onto the context. See [`Camera.apply_stroke()`](../reference/manim.camera.camera.Camera.md#manim.camera.camera.Camera.apply_stroke) and
-  [`Camera.set_cairo_context_color()`](../reference/manim.camera.camera.Camera.md#manim.camera.camera.Camera.set_cairo_context_color) for more details – but it does not get
-  much deeper than that, in the latter method the actual Bézier curves
-  determined by the points of the mobject are drawn; this is where the low-level
-  interaction with Cairo happens.
+- The camera supplies a flat, ordered list of visible mobjects and applies
+  view/projection and shading transformations. Its animatable `frame` describes the
+  region being viewed.
+- Private Cairo renderer helpers process consecutive batches of vectorized, point
+  cloud, and image mobjects without changing their draw order.
+- Vectorized mobjects are converted to Cairo paths and drawn with their background
+  stroke, fill, and foreground stroke. Point clouds and image mobjects are converted
+  to target pixel coordinates and composited by renderer helpers.
+- With a [`MultiCamera`](../reference/manim.renderer.cairo.camera.MultiCamera.md#manim.renderer.cairo.camera.MultiCamera), the renderer draws each secondary camera’s view into
+  a separate image buffer, excluding that camera’s own display mobject.
+- The renderer then draws each of these images in the corresponding
+  [`ImageMobjectFromCamera`](../reference/manim.mobject.types.image_mobject.ImageMobjectFromCamera.md#manim.mobject.types.image_mobject.ImageMobjectFromCamera) in the primary view.
 
-After all batches have been processed, the camera has an image representation
-of the Scene at the current time stamp in form of a NumPy array stored in its
-`pixel_array` attribute. The renderer passes a top-left-origin,
-C-contiguous `uint8` RGBA array to its [`SceneFileWriter`](../reference/manim.scene.scene_file_writer.SceneFileWriter.md#manim.scene.scene_file_writer.SceneFileWriter). OpenGL uses
-the same array contract and performs GPU readback at this renderer boundary only
-when file output needs a frame. This concludes one iteration of the render loop,
-and once the time progression has been processed completely, a final bit
-of cleanup is performed before the [`Scene.play_internal()`](../reference/manim.scene.scene.Scene.md#manim.scene.scene.Scene.play_internal) call is completed.
+After drawing, [`CairoRenderer.get_frame()`](../reference/manim.renderer.cairo.renderer.CairoRenderer.md#manim.renderer.cairo.renderer.CairoRenderer.get_frame) copies the rendered image into a
+top-left-origin, row-major (C-contiguous) `uint8` RGBA array, which the encoder passes to
+the [`SceneFileWriter`](../reference/manim.scene.scene_file_writer.SceneFileWriter.md#manim.scene.scene_file_writer.SceneFileWriter). Then the manager advances the clock by one frame.
+If the animation has a stop condition, the manager checks it at this point,
+before starting the next iteration.
+
+**Which time does user code see?** Within each normal animation step,
+interpolation and updaters see the time at the start of that step. The stop
+condition sees the time after its frame interval. For example, a
+non-frozen 0.3-second animation starting at time 0, at 4 fps, takes two steps:
+
+| Animation offset   | `Scene.time` during interpolation and updaters   | `Scene.time` when checking the stop condition   |
+|--------------------|--------------------------------------------------|-------------------------------------------------|
+| 0 seconds          | 0 seconds                                        | 0.25 seconds                                    |
+| 0.25 seconds       | 0.25 seconds                                     | 0.5 seconds                                     |
+
+The two frames occupy 0.5 seconds, so the next play starts at time 0.5. A frozen
+wait of the same requested duration instead repeats one frame and advances by
+0.25 seconds. These rounding rules apply to both backends. The clock counts
+frames: the time is the number of frames played so far divided by the frame
+rate.
+
+After the last step, `finish()` and `clean_up_from_scene()` see the time at
+the end of the frames processed so far. This also applies when a stop condition
+ends a non-frozen wait early. We will return to those methods below.
 
 A TL;DR for the render loop, in the context of our toy example, reads as follows:
 
@@ -972,34 +1024,33 @@ A TL;DR for the render loop, in the context of our toy example, reads as follows
   state of the transformation animation to the desired time stamp (for example,
   at time stamp `t = 45/30`, the animation is completed to a rate of
   `alpha = 0.5`).
-- Then the scene asks the renderer to do its job. The renderer asks its camera
-  to capture the scene, the only mobject that needs to be processed at this point
-  is the main mobject attached to the transformation; the camera converts the
-  current state of the mobject to entries in a NumPy array. The renderer passes
-  this array to the file writer.
+- Then the encoder asks the renderer to draw the frame. The only mobject that
+  needs to be processed at this point is the main mobject attached to the
+  transformation. The camera supplies its view transform, while Cairo drawing
+  helpers draw the transformed square into the renderer’s image buffer. The
+  encoder passes a copy of that buffer’s RGBA pixels to the file writer, and the
+  manager advances the clock by one frame.
 - At the end of the loop, 90 frames have been passed to the file writer.
 
 ### Completing the render loop
 
-The last few steps in the [`Scene.play_internal()`](../reference/manim.scene.scene.Scene.md#manim.scene.scene.Scene.play_internal) call are not too
-exciting: for every animation, the corresponding [`Animation.finish()`](../reference/manim.animation.animation.Animation.md#manim.animation.animation.Animation.finish)
-and [`Animation.clean_up_from_scene()`](../reference/manim.animation.animation.Animation.md#manim.animation.animation.Animation.clean_up_from_scene) methods are called.
+The last few steps of the run loop are not too exciting: for every animation,
+the corresponding [`Animation.finish()`](../reference/manim.animation.animation.Animation.md#manim.animation.animation.Animation.finish) and
+[`Animation.clean_up_from_scene()`](../reference/manim.animation.animation.Animation.md#manim.animation.animation.Animation.clean_up_from_scene) methods are called.
 
 #### NOTE
 Note that as part of [`Animation.finish()`](../reference/manim.animation.animation.Animation.md#manim.animation.animation.Animation.finish), the [`Animation.interpolate()`](../reference/manim.animation.animation.Animation.md#manim.animation.animation.Animation.interpolate)
 method is called with an argument of 1.0 – you might have noticed already that
 the last frame of an animation can sometimes be a bit off or incomplete.
-This is by current design! The last frame rendered in the render loop (and displayed
-for a duration of `1 / frame_rate` seconds in the rendered video) corresponds to
-the state of the animation `1 / frame_rate` seconds before it ends. To display
-the final frame as well in the video, we would need to append another `1 / frame_rate`
-seconds to the video – which would then mean that a 1 second rendered Manim video
-would be slightly longer than 1 second. We decided against this at some point.
+The render loop samples times strictly before the requested run time. When that
+run time is a whole number of frame intervals, the last image shows the animation
+one interval before its end. Appending the final state as another frame would
+lengthen the video by `1 / frame_rate` seconds. The final interpolation updates
+the mobject for the next animation without adding that extra frame.
 
-In the end, the time progression is closed (which completes the displayed progress bar)
-in the terminal. With the closing of the time progression, the
-[`Scene.play_internal()`](../reference/manim.scene.scene.Scene.md#manim.scene.scene.Scene.play_internal) call is completed, and we return to the renderer,
-which now orders the [`SceneFileWriter`](../reference/manim.scene.scene_file_writer.SceneFileWriter.md#manim.scene.scene_file_writer.SceneFileWriter) to close the partial movie stream.
+Finally, the manager closes the time progression, completing the terminal’s
+progress bar, and asks the [`SceneFileWriter`](../reference/manim.scene.scene_file_writer.SceneFileWriter.md#manim.scene.scene_file_writer.SceneFileWriter) to close the partial movie
+stream.
 This seals the corresponding encoding job so that it accepts no more frames. With
 the default `max_inflight_encoders = 1`, the file writer immediately waits for
 the job and the partial movie file has been written when the call returns. With a

@@ -41,5 +41,5 @@ Converts an RGB array into RGBA with the alpha value opacity maxed.
 * **Parameters:**
   **image** ([*PixelArray*](manim.typing.md#manim.typing.PixelArray))
 * **Return type:**
-  <module ‘PIL.Image’ from ‘/home/runner/work/manim-skill/manim-skill/.manim-docs/.venv-docs/lib/python3.11/site-packages/PIL/Image.py’>
+  *Image*
 

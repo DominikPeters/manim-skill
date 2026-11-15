@@ -11,7 +11,7 @@ Return the visual-segment cache key for one compiled play call.
 
 * **Parameters:**
   * **scene_object** ([*Scene*](manim.scene.scene.Scene.md#manim.scene.scene.Scene)) – The scene object.
-  * **camera_object** ([*Camera*](manim.camera.camera.Camera.md#manim.camera.camera.Camera) *|* *OpenGLCamera*) – The camera object used in the scene.
+  * **camera_object** ([*Camera*](manim.renderer.cairo.camera.Camera.md#manim.renderer.cairo.camera.Camera) *|* [*OpenGLCamera*](manim.renderer.opengl.camera.OpenGLCamera.md#manim.renderer.opengl.camera.OpenGLCamera)) – The camera object used in the scene.
   * **animations_list** (*Iterable* *[*[*Animation*](manim.animation.animation.Animation.md#manim.animation.animation.Animation) *]*) – The list of animations.
   * **current_mobjects_list** (*Iterable* *[*[*Mobject*](manim.mobject.mobject.Mobject.md#manim.mobject.mobject.Mobject) *]*) – The list of mobjects.
   * **backend** (*str*) – Stable identity of the renderer producing the segment.
@@ -33,4 +33,14 @@ Recursively serialize object to JSON using the `CustomEncoder` class.
   The flattened object
 * **Return type:**
   `str`
+
+### invalidate_derived_attribute_names()
+
+Forget the collected names, so that they are collected again.
+
+`ManimConfig.renderer()` calls this after it changes the base classes of
+mobject classes, because the names of their subclasses can change too.
+
+* **Return type:**
+  None
 

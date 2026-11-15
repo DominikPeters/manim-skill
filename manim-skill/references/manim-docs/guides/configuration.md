@@ -89,7 +89,7 @@ with dict-like syntax:
 The former is preferred; the latter is provided for backwards
 compatibility.
 
-Most classes, including [`Camera`](../reference/manim.camera.camera.Camera.md#manim.camera.camera.Camera), [`Mobject`](../reference/manim.mobject.mobject.Mobject.md#manim.mobject.mobject.Mobject), and
+Most classes, including [`Camera`](../reference/manim.renderer.cairo.camera.Camera.md#manim.renderer.cairo.camera.Camera), [`Mobject`](../reference/manim.mobject.mobject.Mobject.md#manim.mobject.mobject.Mobject), and
 [`Animation`](../reference/manim.animation.animation.Animation.md#manim.animation.animation.Animation), read some of their default configuration from the global
 `config`.
 

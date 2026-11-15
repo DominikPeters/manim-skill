@@ -54,12 +54,16 @@ Configure the rich style of logger and console output.
 #### SEE ALSO
 [`make_logger()`](#manim._config.logger_utils.make_logger)
 
-### set_file_logger(log_file_path)
+### set_file_logger(log_file_path, mode='w')
 
-Add a file handler for one exact, already resolved log path.
+Add a file handler to Manim’s logger at the given path.
 
 * **Parameters:**
-  **log_file_path** (*Path*) – Exact path of the log file for this scene.
+  * **log_file_path** (*Path*) – Exact path of the log file for this scene.
+  * **mode** (*str*) – The file mode: `"w"` starts a new log, `"a"` appends to it.
+* **Returns:**
+  The attached handler. Remove it from the logger and close it when
+  logging for this scene ends.
 * **Return type:**
-  None
+  logging.FileHandler
 

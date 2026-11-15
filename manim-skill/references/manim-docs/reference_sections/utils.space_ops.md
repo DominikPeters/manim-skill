@@ -364,8 +364,6 @@ Returns a rotation matrix for a given angle.
 
 ### rotation_matrix(angle, axis, homogeneous=False)
 
-Rotation in R^3 about a specified axis of rotation.
-
 * **Parameters:**
   * **angle** (*float*)
   * **axis** ([*Vector3DLike*](manim.typing.md#manim.typing.Vector3DLike))
